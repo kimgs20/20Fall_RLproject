@@ -3,7 +3,7 @@ import numpy as np
 import tkinter as tk
 from PIL import ImageTk, Image
 
-np.random.seed(1)
+# np.random.seed(1)
 PhotoImage = ImageTk.PhotoImage
 UNIT = 100  # 픽셀 수
 HEIGHT = 4  # 그리드월드 세로
@@ -15,7 +15,7 @@ class QEnv(tk.Tk):
         super(QEnv, self).__init__()
         self.action_space = ['u', 'd', 'l', 'r']
         self.n_actions = len(self.action_space)
-        self.title('Q Learning')
+        self.title('Q-Learning')
         # self.geometry('{0}x{1}'.format(HEIGHT * UNIT, HEIGHT * UNIT))
         self.geometry('{0}x{1}'.format(WIDTH * UNIT, HEIGHT * UNIT))
         self.shapes = self.load_images()
@@ -27,12 +27,13 @@ class QEnv(tk.Tk):
                            height=HEIGHT * UNIT,
                            width=WIDTH * UNIT)
         # 그리드 생성
-        for c in range(0, WIDTH * UNIT, UNIT):  # 
-            # x0, y0, x1, y1 = c, 0, c, HEIGHT * UNIT
-            x0, y0, x1, y1 = c, 0, c, WIDTH * UNIT
-            canvas.create_line(x0, y0, x1, y1)
-        for r in range(0, HEIGHT * UNIT, UNIT):  # 
-            x0, y0, x1, y1 = 0, r, HEIGHT * UNIT, r
+        for c in range(0, WIDTH * UNIT, UNIT):  # 0~1200 까지 세로선 
+            x0, y0, x1, y1 = c, 0, c, HEIGHT * UNIT
+            # x0, y0, x1, y1 = c, 0, c, WIDTH * UNIT
+            canvas.create_line(x0, y0, x1, y1) # (x0, y0), (x1, y1)을 잇는 선 생성
+        for r in range(0, HEIGHT * UNIT, UNIT):  # 0~400 까지 가로선
+            # x0, y0, x1, y1 = 0, r, HEIGHT * UNIT, r
+            x0, y0, x1, y1 = 0, r, WIDTH * UNIT, r
             canvas.create_line(x0, y0, x1, y1)
 
         # 캔버스에 이미지 추가
@@ -62,20 +63,19 @@ class QEnv(tk.Tk):
             Image.open("./img/thunder.png").resize((100, 100))) # 65, 65
         goal = PhotoImage(
             Image.open("./img/boots.png").resize((100, 100))) # 65, 65
-
         return agent, cliff, goal
 
     def text_value(self, row, col, contents, action, font='Helvetica', size=10,
                    style='normal', anchor="nw"):
 
-        if action == 0:
-            origin_x, origin_y = 7, 42
-        elif action == 1:
+        if action == 0:     # up
+            origin_x, origin_y = 7, 42 #42 # origin y 커지면 오른쪽으로 이동
+        elif action == 1:   # down
             origin_x, origin_y = 85, 42
-        elif action == 2:
-            origin_x, origin_y = 42, 5
-        else:
-            origin_x, origin_y = 42, 77
+        elif action == 2:   # left
+            origin_x, origin_y = 42, 9
+        else:               # right
+            origin_x, origin_y = 42, 58
 
         x, y = origin_y + (UNIT * col), origin_x + (UNIT * row)
         font = (font, str(size), style)
@@ -87,8 +87,8 @@ class QEnv(tk.Tk):
         for i in self.texts:
             self.canvas.delete(i)
         self.texts.clear()
-        for i in range(HEIGHT):
-            for j in range(WIDTH):
+        for i in range(WIDTH): # HEIGHT 둘이 바꾸니까 되는데... 왜 된걸까?
+            for j in range(HEIGHT): # WIDTH = 12
                 for action in range(0, 4):
                     state = [i, j]
                     if str(state) in q_table.keys():
@@ -111,7 +111,7 @@ class QEnv(tk.Tk):
 
         x, y = self.canvas.coords(self.agent)
         # self.canvas.move(self.agent, UNIT / 2 - x, UNIT / 2 - y)
-        self.canvas.move(self.agent, 50 - x, 350 - y) # 초기화하는 위치
+        self.canvas.move(self.agent, 50 - x, 350 - y) # cliff에 떨어지고 초기화하는 위치
 
         self.render()
         return self.coords_to_state(self.canvas.coords(self.agent))
@@ -157,7 +157,7 @@ class QEnv(tk.Tk):
             reward = -100
             done = True
         else:
-            reward = -1 # originally 0
+            reward = -1 # 0
             done = False
 
         next_state = self.coords_to_state(next_state)

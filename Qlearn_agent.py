@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # hyperparam
 num_episode = 1000
 step_size = 0.01
-discount_factor = 0.9
+discount_factor = 0.99
 epsilon = 0.1
 
 class QLearningAgent:
@@ -16,22 +16,22 @@ class QLearningAgent:
         self.actions = actions
         self.step_size = step_size
         self.discount_factor = discount_factor
-        self.epsilon = epsilon #0.9 epsilon 값이 0.9 = 90% 확률로 random move를 해라
-        self.q_table = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
+        self.epsilon = epsilon
+        self.q_table = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0]) 
 
     # <s, a, r, s'> 샘플로부터 큐함수 업데이트
+    # 벨만 최적 방정식을 사용한 큐함수의 업데이트
+
     def learn(self, state, action, reward, next_state):
         state, next_state = str(state), str(next_state)
         q_1 = self.q_table[state][action]
-        # 벨만 최적 방정식을 사용한 큐함수의 업데이트
         q_2 = reward + self.discount_factor * max(self.q_table[next_state])
         self.q_table[state][action] += self.step_size * (q_2 - q_1)
 
-    # 큐함수에 의거하여 입실론 탐욕 정책에 따라서 행동을 반환
+    # 큐함수에 및 epsilon greedy policy에 따라서 행동을 반환
     def get_action(self, state):
-        if np.random.rand() < self.epsilon: # random값이 0.1보다 작다면 random move를 해라
-            # 무작위 행동 반환
-            action = np.random.choice(self.actions)
+        if np.random.rand() < self.epsilon: # random값이 0.1보다 작다면 action = random
+            action = np.random.choice(self.actions) # random action
         else:
             # 큐함수에 따른 행동 반환
             state = str(state)
@@ -75,7 +75,6 @@ if __name__ == "__main__":
             print(episode+1, eps_reward)
             # plt.plot()
             
-
             if done:
                 episode_reward.append(eps_reward)
                 # plot_episodes():
@@ -83,17 +82,24 @@ if __name__ == "__main__":
 
 
 eps_list = []
+mean = 0
+mean_list = []
 for i in range(num_episode):
     eps_list.append(i+1)
+    mean = mean + ( (episode_reward[i] - mean) / (i+1))
+    mean_list.append(mean)
 
 my_dpi = 100
-plt.figure(figsize=(1600/my_dpi, 800/my_dpi), dpi=my_dpi)
+plt.figure(figsize=(1000/my_dpi, 400/my_dpi), dpi=my_dpi)
 
 # plt.figure()
-plt.plot(eps_list, episode_reward)
-plt.title("Cliff Walking: Q-Learning")
-plt.xlabel('Episode')
-plt.ylabel('Reward')
-plt.savefig('./Q-learning_default.png')
+plt.plot(eps_list, episode_reward, label = 'reward')
+plt.plot(eps_list, mean_list, linewidth=6, label = 'mean')
+plt.legend(loc='upper right', fontsize = 10)
+plt.ylim(-280, 130)
+plt.title("Cliff Walking: Q-Learning", fontsize = 15)
+plt.xlabel('Episode', fontsize = 15)
+plt.ylabel('Reward', fontsize = 15)
+plt.savefig('./plots/.png')
 plt.ioff()
 plt.show()

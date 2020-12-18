@@ -6,26 +6,26 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 # hyperparam
-num_episode = 1000
-# step_size = 0.01
-# discount_factor = 0.9
-# epsilon = 0.1
+num_episode = 500
+step_size = 0.1 #0.01
+discount_factor = 0.9
+epsilon = 0.1
 
 class SARSAgent:
     def __init__(self, actions):
         self.actions = actions
-        self.learning_rate = 0.01 # step_size = learning rate
-        self.discount_factor = 0.9
-        self.epsilon = 0.1
-        # 0을 초기값으로 가지는 큐함수 테이블 생성
-        self.q_table = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
+        self.step_size = step_size
+        self.discount_factor = discount_factor
+        self.epsilon = epsilon
+        self.q_table = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0]) # 초기값 0 인 table 생성
 
     # <s, a, r, s', a'>의 샘플로부터 큐함수를 업데이트
+
     def learn(self, state, action, reward, next_state, next_action):
         state, next_state = str(state), str(next_state)
         current_q = self.q_table[state][action]
         next_state_q = self.q_table[next_state][next_action]
-        new_q = (current_q + self.learning_rate *
+        new_q = (current_q + self.step_size *
                 (reward + self.discount_factor * next_state_q - current_q))
         self.q_table[state][action] = new_q       
 
@@ -74,9 +74,6 @@ if __name__ == "__main__":
             agent.learn(state, action, reward, next_state, next_action)
             # agent.learn(str(state), action, reward, str(next_state), next_action)
 
-            ##################
-            # What is Next Action???
-
             state = next_state
             action = next_action
             # 모든 큐함수를 화면에 표시
@@ -94,17 +91,24 @@ if __name__ == "__main__":
 
 
 eps_list = []
+mean = 0
+mean_list = []
 for i in range(num_episode):
     eps_list.append(i+1)
+    mean = mean + ( (episode_reward[i] - mean) / (i+1))
+    mean_list.append(mean)
 
 my_dpi = 100
-plt.figure(figsize=(1600/my_dpi, 800/my_dpi), dpi=my_dpi)
+plt.figure(figsize=(1000/my_dpi, 400/my_dpi), dpi=my_dpi)
 
 # plt.figure()
-plt.plot(eps_list, episode_reward)
-plt.title("Cliff Walking: SARSA")
-plt.xlabel('Episode')
-plt.ylabel('Reward')
-plt.savefig('./Sarsa_default.png')
+plt.plot(eps_list, episode_reward, label = 'reward')
+plt.plot(eps_list, mean_list, linewidth=6, label = 'mean')
+plt.legend(loc='upper right', fontsize = 10)
+plt.ylim(-280, 130)
+plt.title("Cliff Walking: SARSA", fontsize = 15)
+plt.xlabel('Episode', fontsize = 15)
+plt.ylabel('Reward',  fontsize = 15)
+plt.savefig('./plots/2_Sarsa_default.png')
 plt.ioff()
 plt.show()

@@ -3,7 +3,7 @@ import numpy as np
 import tkinter as tk
 from PIL import ImageTk, Image
 
-np.random.seed(1)
+# np.random.seed(1)
 PhotoImage = ImageTk.PhotoImage
 UNIT = 100  # 픽셀 수
 HEIGHT = 4  # 그리드월드 세로
@@ -27,11 +27,11 @@ class SarsaEnv(tk.Tk):
                            height=HEIGHT * UNIT,
                            width=WIDTH * UNIT)
         # 그리드 생성
-        for c in range(0, WIDTH * UNIT, UNIT):  # 0~400 by 80
+        for c in range(0, WIDTH * UNIT, UNIT):  # 0~1200 까지 세로선
             x0, y0, x1, y1 = c, 0, c, HEIGHT * UNIT
-            canvas.create_line(x0, y0, x1, y1)
-        for r in range(0, HEIGHT * UNIT, UNIT):  # 0~400 by 80
-            x0, y0, x1, y1 = 0, r, HEIGHT * UNIT, r
+            canvas.create_line(x0, y0, x1, y1) # (x0, y0), (x1, y1)을 잇는 선 생성
+        for r in range(0, HEIGHT * UNIT, UNIT):  # # 0~400 까지 가로선
+            x0, y0, x1, y1 = 0, r, WIDTH * UNIT, r
             canvas.create_line(x0, y0, x1, y1)
 
         # 캔버스에 이미지 추가
@@ -71,9 +71,9 @@ class SarsaEnv(tk.Tk):
         elif action == 1:
             origin_x, origin_y = 85, 42
         elif action == 2:
-            origin_x, origin_y = 42, 5
+            origin_x, origin_y = 42, 9
         else:
-            origin_x, origin_y = 42, 77
+            origin_x, origin_y = 42, 58
 
         x, y = origin_y + (UNIT * col), origin_x + (UNIT * row)
         font = (font, str(size), style)
@@ -85,13 +85,13 @@ class SarsaEnv(tk.Tk):
         for i in self.texts:
             self.canvas.delete(i)
         self.texts.clear()
-        for x in range(HEIGHT):
-            for y in range(WIDTH):
+        for i in range(WIDTH):
+            for j in range(HEIGHT):
                 for action in range(0, 4):
-                    state = [x, y]
+                    state = [i, j]
                     if str(state) in q_table.keys():
                         temp = q_table[str(state)][action]
-                        self.text_value(y, x, round(temp, 3), action)
+                        self.text_value(j, i, round(temp, 3), action)
 
     def coords_to_state(self, coords):
         x = int((coords[0] - 50) / 100)
@@ -131,7 +131,7 @@ class SarsaEnv(tk.Tk):
 
         # 에이전트 이동
         self.canvas.move(self.agent, base_action[0], base_action[1])
-        # 에이전트(빨간 네모)를 가장 상위로 배치
+        # 에이전트를 가장 상위로 배치
         self.canvas.tag_raise(self.agent)
         next_state = self.canvas.coords(self.agent)
 
@@ -149,7 +149,7 @@ class SarsaEnv(tk.Tk):
                             self.canvas.coords(self.cliff8),
                             self.canvas.coords(self.cliff9),
                             self.canvas.coords(self.cliff10)]:
-            reward = -100
+            reward = -300
             done = True
         else:
             reward = -1
